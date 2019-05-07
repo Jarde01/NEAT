@@ -173,6 +173,9 @@ def create_disjoint_genomes():
 
 
 def crossover(genome1, genome2):
+    set(genome2.connection_genes).difference(set(genome1.connection_genes))
+    set(genome2.connection_genes).intersection(set(genome1.connection_genes))
+
     print()
 
 

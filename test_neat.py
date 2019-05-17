@@ -3,7 +3,7 @@ import pytest
 
 from neat import GenomeFactory, compatibility_distance, mutate_add_node, config, mutate_add_connection, sort_species, \
     calculate_num_excess_disjoint_genes, NodeGene, NodeType, ConnectionGene, update_innovation_number, crossover, \
-    create_population, create_network
+    create_population, create_network, feedforward
 
 innovation_num = 0
 
@@ -237,4 +237,10 @@ def test_create_network():
     g = GenomeFactory.create_genome(4,2)
     net = create_network(g)
     assert(net)
+
+
+def test_feedforward():
+    g1 = GenomeFactory.create_genome(2,1)
+    graph = create_network(g1)
+    out = feedforward(graph, g1, [0,0])
 

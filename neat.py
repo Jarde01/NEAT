@@ -4,6 +4,7 @@ import random
 import copy
 from collections import OrderedDict
 import configparser
+import numpy as np
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -355,7 +356,7 @@ def count_node_types(genome: Genome):
 
 
 def create_network(genome: Genome):
-    # num_in, num_hid, num_out = count_node_types(genome)
+    num_in, num_hid, num_out = count_node_types(genome)
     #
     # input = Input(shape=num_in)
     # outputs = [Dense(1, activation='sigmoid') for x in range(0, num_out)]
@@ -368,7 +369,19 @@ def create_network(genome: Genome):
             network[conn.in_node_key].append(conn.out_node_key)
         else:
             network[conn.in_node_key] = [conn.out_node_key]
-    print('created network')
+
+    network['num_out'] = num_out
+    network['num_in'] = num_in
+    network['num_hid'] = num_hid
+
+    return network
+
+
+def feedforward(graph, genome:Genome, input):
+    output = np.array(graph['num_out'])
+    for x in range(1, graph['num_in']+1):
+        print(x)
+    return output
 
 
 # To implement:

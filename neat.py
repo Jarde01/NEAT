@@ -297,7 +297,7 @@ def sort_species(genomes: []):
 
     curr_dict_key = 0
     while len(genomes) > 0:
-        compare_key = random.randrange(0, len(genomes)-1) if len(genomes) > 2 else 0
+        compare_key = random.randrange(0, len(genomes) - 1) if len(genomes) > 2 else 0
         # compare_key = compare_key+1 if compare_key
 
         # didnt find any close species, create new
@@ -338,10 +338,43 @@ def create_population(init_genome: Genome):
     return pop
 
 
+from keras.layers import Input, Lambda, Dense, concatenate
+from keras.models import Model
+
+
+def count_node_types(genome: Genome):
+    num_in, num_hid, num_out = 0, 0, 0
+    for key, node_gene in genome.node_genes.items():
+        if node_gene.node_type == NodeType.Hidden:
+            num_hid += 1
+        elif node_gene.node_type == NodeType.Input:
+            num_in += 1
+        elif node_gene.node_type == NodeType.Output:
+            num_out += 1
+    return num_in, num_hid, num_out
+
+
+def create_network(genome: Genome):
+    # num_in, num_hid, num_out = count_node_types(genome)
+    #
+    # input = Input(shape=num_in)
+    # outputs = [Dense(1, activation='sigmoid') for x in range(0, num_out)]
+    # output = Dense(num_out, activation='sigmoid')
+    #
+    network = {}
+    for innov, conn in genome.connection_genes.items():
+        found = True if network.get(conn.in_node_key, None) is not None else False
+        if found:
+            network[conn.in_node_key].append(conn.out_node_key)
+        else:
+            network[conn.in_node_key] = [conn.out_node_key]
+    print('created network')
+
+
 # To implement:
 # reporters: prints out information about stuff
 # fitness functions
- # Running the sample
+# Running the sample
 
 '''
 1. Initial population: take single genome then duplicate with mutations

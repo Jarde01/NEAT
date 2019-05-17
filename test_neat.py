@@ -1,9 +1,9 @@
 import copy
 import pytest
 
-from main import GenomeFactory, compatibility_distance, mutate_add_node, config, mutate_add_connection, sort_species, \
+from neat import GenomeFactory, compatibility_distance, mutate_add_node, config, mutate_add_connection, sort_species, \
     calculate_num_excess_disjoint_genes, NodeGene, NodeType, ConnectionGene, update_innovation_number, crossover, \
-    create_population
+    create_population, create_network
 
 innovation_num = 0
 
@@ -232,3 +232,9 @@ def test_create_population():
     pop = create_population(g)
 
     assert(len(pop) == int(length))
+
+def test_create_network():
+    g = GenomeFactory.create_genome(4,2)
+    net = create_network(g)
+    assert(net)
+

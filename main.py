@@ -322,3 +322,26 @@ def same_species(genome1, genome2):
     return same
 
 
+def create_population(init_genome: Genome):
+    pop = []
+    for x in range(0, config['NEAT']['pop_size']):
+        g = init_genome.copy()
+        mutate_add_connection(g) if random.uniform(0, 1) < config['DefaultGenome']['bias_mutate_rate'] else g
+        mutate_add_node(g) if random.uniform(0, 1) < config['DefaultGenome']['bias_mutate_rate'] else g
+        pop.append(g)
+    return pop
+
+
+# To implement:
+# reporters: prints out information about stuff
+# fitness functions
+ # Running the sample
+
+'''
+1. Initial population: take single genome then duplicate with mutations
+2. Create model networks
+3. evaluation genomes
+4. speciate
+5. take top 2 from each species and reproduce into a single genome
+6. take single genome then duplicate with mutations
+'''

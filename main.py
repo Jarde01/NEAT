@@ -322,12 +322,18 @@ def same_species(genome1, genome2):
     return same
 
 
+def mutate_modify_weights(genome: Genome):
+    for conn in genome.connection_genes.values():
+        conn.weight = random.uniform(0, 1) * float(config['DefaultGenome']['bias_mutate_power'])
+
+
 def create_population(init_genome: Genome):
     pop = []
-    for x in range(0, config['NEAT']['pop_size']):
+    for x in range(0, int(config['NEAT']['pop_size'])):
         g = init_genome.copy()
-        mutate_add_connection(g) if random.uniform(0, 1) < config['DefaultGenome']['bias_mutate_rate'] else g
-        mutate_add_node(g) if random.uniform(0, 1) < config['DefaultGenome']['bias_mutate_rate'] else g
+        mutate_modify_weights(g) if random.uniform(0, 1) < float(config['DefaultGenome']['bias_mutate_rate']) else g
+        mutate_add_connection(g) if random.uniform(0, 1) < float(config['DefaultGenome']['bias_mutate_rate']) else g
+        mutate_add_node(g) if random.uniform(0, 1) < float(config['DefaultGenome']['bias_mutate_rate']) else g
         pop.append(g)
     return pop
 

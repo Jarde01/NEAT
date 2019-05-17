@@ -2,8 +2,8 @@ import copy
 import pytest
 
 from main import GenomeFactory, compatibility_distance, mutate_add_node, config, mutate_add_connection, sort_species, \
-    calculate_num_excess_disjoint_genes, NodeGene, NodeType, ConnectionGene, update_innovation_number, crossover
-
+    calculate_num_excess_disjoint_genes, NodeGene, NodeType, ConnectionGene, update_innovation_number, crossover, \
+    create_population
 
 innovation_num = 0
 
@@ -221,3 +221,14 @@ def test_create_genome():
 
         print(f'Expected: {num_i * num_o}, Found: {connection_count}')
         assert (connection_count == num_i * num_o)
+
+
+def test_create_population():
+    length = '10'
+    config['NEAT']['pop_size'] = length
+
+    g = GenomeFactory.create_genome(1,1)
+
+    pop = create_population(g)
+
+    assert(len(pop) == int(length))

@@ -379,7 +379,10 @@ def create_network(genome: Genome):
 
 def feedforward(graph, genome:Genome, input):
     output = np.array(graph['num_out'])
+    node_values = {}
+
     for x in range(1, graph['num_in']+1):
+
         print(x)
     return output
 

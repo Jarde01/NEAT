@@ -1,11 +1,13 @@
 import copy
 import pytest
 
+import NeuralNetwork
 from neat import GenomeFactory, compatibility_distance, mutate_add_node, config, mutate_add_connection, sort_species, \
     calculate_num_excess_disjoint_genes, NodeGene, NodeType, ConnectionGene, update_innovation_number, crossover, \
-    create_population, create_network, feedforward
+    create_population, create_network
 
 innovation_num = 0
+
 
 def test_compatibility_distance():
     num_input = 1
@@ -158,7 +160,7 @@ def test_mutate_add_node():
     assert (len(genome.node_genes) == len(before.node_genes) + 1)
 
     # make sure new connections are added with correct values
-    new_connection_key = list(genome.connection_genes.keys())[new_connection_index-1]
+    new_connection_key = list(genome.connection_genes.keys())[new_connection_index - 1]
     assert (genome.connection_genes[new_connection_key])
     assert (genome.connection_genes[new_connection_key].enabled is True)
 
@@ -227,20 +229,41 @@ def test_create_population():
     length = '10'
     config['NEAT']['pop_size'] = length
 
-    g = GenomeFactory.create_genome(1,1)
+    g = GenomeFactory.create_genome(1, 1)
 
     pop = create_population(g)
 
-    assert(len(pop) == int(length))
+    assert (len(pop) == int(length))
+
 
 def test_create_network():
-    g = GenomeFactory.create_genome(4,2)
-    net = create_network(g)
-    assert(net)
+    g = GenomeFactory.create_genome(4, 2)
+    net, _ = create_network(g)
+    assert (net)
 
 
 def test_feedforward():
-    g1 = GenomeFactory.create_genome(2,1)
-    graph = create_network(g1)
-    out = feedforward(graph, g1, [0,0])
+    g1 = GenomeFactory.create_genome(2, 1)
+    x = [[0, 0]]
+    y = [[0]]
+    NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
 
+
+def test_find_layers():
+    g1 = GenomeFactory.create_genome(2, 1)
+
+    l = NeuralNetwork.NeuralNetwork.find_layers(g1)
+    assert (len(l) == 1)
+
+    mutate_add_node(g1)
+    l2 = NeuralNetwork.NeuralNetwork.find_layers(g1)
+    assert (len(l2) == 2)
+
+    mutate_add_node(g1)
+    mutate_add_node(g1)
+    mutate_add_node(g1)
+    mutate_add_node(g1)
+    mutate_add_node(g1)
+    mutate_add_node(g1)
+    l3 = NeuralNetwork.NeuralNetwork.find_layers(g1)
+    assert (len(l3) > 2)

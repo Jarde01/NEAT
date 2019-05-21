@@ -2,14 +2,14 @@ from enum import Enum
 import numpy as np
 import random
 import copy
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import configparser
 import numpy as np
 
 config = configparser.ConfigParser()
 config.read("config.ini")
 
-innovation_num = 1
+innovation_num = 0
 
 xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
 xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
@@ -70,7 +70,9 @@ class Genome:
         self.fitness = 0
         self.connection_genes = {}
         self.node_genes = {}
-        # self.ancestors = {}
+        self.inputs = []
+        self.outputs = []
+        self.hiddens = []
 
     def copy(self):
         g = Genome()
@@ -78,6 +80,9 @@ class Genome:
         g.fitness = self.fitness
         g.connection_genes = copy.deepcopy(self.connection_genes)
         g.node_genes = copy.deepcopy(self.node_genes)
+        g.inputs = copy.deepcopy(self.inputs)
+        g.outputs = copy.deepcopy(self.outputs)
+        g.hiddens = copy.deepcopy(self.hiddens)
         return g
 
     def create_graph(self):
@@ -110,12 +115,13 @@ class GenomeFactory:
         global innovation_num
         genome = Genome()
 
-        curr_gene_num = 1
+        curr_gene_num = 0
         input_genes = []
         for x in range(num_input_nodes):
             n = NodeGene(nodenum=curr_gene_num, nodetype=NodeType.Input)
             genome.node_genes[curr_gene_num] = n
             input_genes.append(n)
+            genome.inputs.append(curr_gene_num)
             curr_gene_num += 1
 
         output_genes = []
@@ -123,10 +129,12 @@ class GenomeFactory:
             n = NodeGene(nodenum=curr_gene_num, nodetype=NodeType.Output)
             output_genes.append(n)
             genome.node_genes[curr_gene_num] = n
+            genome.outputs.append(curr_gene_num)
             curr_gene_num += 1
 
+
         # connect all the input to the output genes
-        curr_connection_count = 1
+        curr_connection_count = 0
         for in_gene in input_genes:
             for j, out_gene in enumerate(output_genes):
                 e = ConnectionGene()
@@ -270,6 +278,7 @@ def mutate_add_node(genome: Genome):
     new_connection_new_to_old = ConnectionGene()
     new_connection_old_to_new = ConnectionGene()
     new_gene = NodeGene(nodenum=len(genome.node_genes) + 1, nodetype=NodeType.Hidden)
+    genome.hiddens.append(new_gene.node_number)
     genome.node_genes[len(genome.node_genes) + 1] = new_gene
 
     # new connection from previous node to new node
@@ -356,35 +365,20 @@ def count_node_types(genome: Genome):
 
 
 def create_network(genome: Genome):
-    num_in, num_hid, num_out = count_node_types(genome)
-    #
-    # input = Input(shape=num_in)
-    # outputs = [Dense(1, activation='sigmoid') for x in range(0, num_out)]
-    # output = Dense(num_out, activation='sigmoid')
-    #
-    network = {}
+    network = defaultdict(list)
+    rev_network = defaultdict(list)
     for innov, conn in genome.connection_genes.items():
-        found = True if network.get(conn.in_node_key, None) is not None else False
-        if found:
-            network[conn.in_node_key].append(conn.out_node_key)
-        else:
-            network[conn.in_node_key] = [conn.out_node_key]
+        network[conn.in_node_key].append(conn.out_node_key)
+        rev_network[conn.out_node_key].append(conn.in_node_key)
 
-    network['num_out'] = num_out
-    network['num_in'] = num_in
-    network['num_hid'] = num_hid
-
-    return network
+    return network, rev_network
 
 
-def feedforward(graph, genome:Genome, input):
-    output = np.array(graph['num_out'])
-    node_values = {}
-
-    for x in range(1, graph['num_in']+1):
-
-        print(x)
-    return output
+def list_connections(genome:Genome):
+    conns = []
+    for innov, conn in genome.connection_genes.items():
+        conns.append((conn.in_node_key, conn.out_node_key))
+    return conns
 
 
 # To implement:

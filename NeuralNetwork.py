@@ -32,15 +32,17 @@ class NeuralNetwork:
         values = [0 for x in range(0, len(genome.node_genes))]
         # for x in len(x_in):
         #     values[x] = x_in[x]
-
-        for x_in in x_input:
+        error = []
+        for xin, yout in list(zip(x_input, y_out)):
             for layer in list(layers):
                 for node in layer:
-                    values[node] = np.array(x_in) * np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)])                input_val = np.zeros((len(layer), 1))
-                    # input_weights =
-                    print()
-        print()
-        return output
+                    data = np.array(xin)
+                    weights = np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)])
+                    values[node] = np.sum(data*np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)]))
+            output = np.array(values[len(genome.inputs): len(genome.inputs) + len(genome.outputs)])
+            mse = ((output - yout) ** 2).mean(axis=None)
+            error.append(mse)
+        return error
 
     @staticmethod
     def find_layers(genome: Genome):

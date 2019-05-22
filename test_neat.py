@@ -2,11 +2,15 @@ import copy
 import pytest
 
 import NeuralNetwork
-from neat import GenomeFactory, compatibility_distance, mutate_add_node, config, mutate_add_connection, sort_species, \
-    calculate_num_excess_disjoint_genes, NodeGene, NodeType, ConnectionGene, update_innovation_number, crossover, \
-    create_population, create_network
-
-innovation_num = 0
+from config import Config
+from neat import compatibility_distance, sort_species, \
+    calculate_num_excess_disjoint_genes, crossover, \
+    create_population
+from node_gene import NodeGene
+from utils import InnovationNumber
+from connection_gene import ConnectionGene
+from enums.node_type import NodeType
+from genome import GenomeFactory
 
 
 def test_compatibility_distance():
@@ -20,9 +24,9 @@ def test_compatibility_distance():
     assert (distance < 1)
     assert (distance > -1)
 
-    mutate_add_node(g1)
-    mutate_add_node(g1)
-    mutate_add_node(g1)
+    g1.mutate_add_node()
+    g1.mutate_add_node()
+    g1.mutate_add_node()
 
     distance = compatibility_distance(g, g1)
     assert (distance > 1 or distance > -1)
@@ -33,23 +37,23 @@ def test_sort_species_multiple():
     num_output = 2
     num_genomes = 5
 
-    config['DefaultGenome']['compatibility_threshold'] = '0.1'
+    Config.config['DefaultGenome']['compatibility_threshold'] = '0.1'
 
     genomes = []
     for i in range(num_genomes):
         g = GenomeFactory.create_genome(num_input, num_output)
-        mutate_add_connection(g)
-        mutate_add_node(g)
-        mutate_add_node(g)
-        mutate_add_node(g)
+        g.mutate_add_connection()
+        g.mutate_add_node()
+        g.mutate_add_node()
+        g.mutate_add_node()
         genomes.append(g)
 
         g1 = g.copy()
-        mutate_add_node(g1)
-        mutate_add_connection(g1)
-        mutate_add_connection(g1)
-        mutate_add_connection(g1)
-        mutate_add_connection(g1)
+        g1.mutate_add_node()
+        g1.mutate_add_connection()
+        g1.mutate_add_connection()
+        g1.mutate_add_connection()
+        g1.mutate_add_connection()
         genomes.append(g1)
 
         g2 = g.copy()
@@ -66,16 +70,16 @@ def test_sort_species_single():
     num_output = 2
     num_genomes = 5
 
-    config['DefaultGenome']['compatibility_threshold'] = '100'
+    Config.config['DefaultGenome']['compatibility_threshold'] = '100'
 
     genomes = []
     for i in range(num_genomes):
         g = GenomeFactory.create_genome(num_input, num_output)
-        mutate_add_connection(g)
+        g.mutate_add_connection()
         genomes.append(g)
 
         g1 = g.copy()
-        mutate_add_node(g1)
+        g1.mutate_add_node()
         genomes.append(g1)
 
         g2 = g.copy()
@@ -124,7 +128,7 @@ def test_mutate_add_connection():
     before = GenomeFactory.create_genome(num_input, num_output)
     genome = copy.deepcopy(before)
 
-    mutate_add_connection(genome)
+    genome.mutate_add_connection()
 
     assert (len(before.connection_genes) < len(genome.connection_genes))
 
@@ -139,7 +143,7 @@ def test_mutate_add_node():
     before = GenomeFactory.create_genome(num_input, num_output)
     genome = copy.deepcopy(before)
 
-    mutate_add_node(genome)
+    genome.mutate_add_node()
 
     # find and make sure one node is disabled
     loc = None
@@ -182,17 +186,20 @@ def test_mutate_add_node():
 
 
 def create_with_hidden_layer(genome2):
-    global innovation_num
+    innovation_num = InnovationNumber.innovation_num
     new_node_key = 4
     new_out_node_key = 3
     conn_modifying_key = 2
 
     genome2.node_genes[new_node_key] = NodeGene(new_node_key, NodeType.Hidden)
+
     newcon = ConnectionGene()
     newcon.innovation_num = innovation_num
-    update_innovation_number()
     newcon.in_node_key = new_node_key
     newcon.out_node_key = new_out_node_key
+    InnovationNumber.innovation_num += 1
+
+
     genome2.connection_genes[new_out_node_key] = newcon
     genome2.connection_genes[conn_modifying_key].out_node_key = new_node_key
 
@@ -227,7 +234,7 @@ def test_create_genome():
 
 def test_create_population():
     length = '10'
-    config['NEAT']['pop_size'] = length
+    Config.config['NEAT']['pop_size'] = length
 
     g = GenomeFactory.create_genome(1, 1)
 
@@ -238,7 +245,7 @@ def test_create_population():
 
 def test_create_network():
     g = GenomeFactory.create_genome(4, 2)
-    net, _ = create_network(g)
+    net, _ = g.create_graphs()
     assert (net)
 
 
@@ -248,7 +255,7 @@ def test_feedforward():
     y = [[0], [1], [0], [1]]
     result = NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
 
-    assert (len(result) == 3)
+    assert (len(result) == 4)
 
 
 def test_find_layers():
@@ -257,15 +264,16 @@ def test_find_layers():
     l = NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l) == 1)
 
-    mutate_add_node(g1)
+    g1.mutate_add_node()
     l2 = NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l2) == 2)
 
-    mutate_add_node(g1)
-    mutate_add_node(g1)
-    mutate_add_node(g1)
-    mutate_add_node(g1)
-    mutate_add_node(g1)
-    mutate_add_node(g1)
+    g1.mutate_add_node()
+    g1.mutate_add_node()
+    g1.mutate_add_node()
+    g1.mutate_add_node()
+    g1.mutate_add_node()
+    g1.mutate_add_node()
+
     l3 = NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l3) > 2)

@@ -1,28 +1,17 @@
-from keras import Input
 import numpy as np
-from neat import Genome, GenomeFactory, mutate_add_node, list_connections, create_network
-import keras
-import matplotlib.pyplot as plt
-from keras.layers import Dense, GlobalAveragePooling2D
-from keras.applications import MobileNet
-from keras.preprocessing import image
-from keras.applications.mobilenet import preprocess_input
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import Model
-from keras.optimizers import Adam
 
 
 class NeuralNetwork:
-    @staticmethod
-    def create(genome: Genome, depth, input, output):
-        layers = []
-
-        x = Input(shape=(input,))
-        for x in range(0, depth):
-            x = Dense(10, activation='relu')(x)
-        all_layers = keras.layers.concatenate(layers)(x)
-        output = Dense(32)(all_layers)
-        return x
+    # @staticmethod
+    # def create(genome: Genome, depth, input, output):
+    #     layers = []
+    #
+    #     x = Input(shape=(input,))
+    #     for x in range(0, depth):
+    #         x = Dense(10, activation='relu')(x)
+    #     all_layers = keras.layers.concatenate(layers)(x)
+    #     output = Dense(32)(all_layers)
+    #     return x
 
     @staticmethod
     def relu(x):
@@ -37,9 +26,10 @@ class NeuralNetwork:
         return (1 - np.exp(-2 * x)) / (1 + np.exp(-2 * x))
 
     @staticmethod
-    def feedforward(genome: Genome, x_input, y_out):
-        graph, rev_graph = create_network(genome)
+    def feedforward(genome, x_input, y_out):
+        graph, rev_graph = genome.create_graphs()
         layers = NeuralNetwork.find_layers(genome)
+        connections = genome.list_connections()
         # values = [0 for x in range(0, len(genome.node_genes))]
         # for x in len(x_in):
         #     values[x] = x_in[x]
@@ -60,10 +50,10 @@ class NeuralNetwork:
         return error
 
     @staticmethod
-    def find_layers(genome: Genome):
+    def find_layers(genome):
         layers = []
         s = set(genome.inputs)
-        connections = list_connections(genome)
+        connections = genome.list_connections()
         required = NeuralNetwork.find_required(genome, connections)
 
         while 1:

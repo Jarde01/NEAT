@@ -25,21 +25,33 @@ class NeuralNetwork:
         return x
 
     @staticmethod
+    def relu(Z):
+        return np.maximum(0, Z)
+
+    @staticmethod
+    def sigmoid(Z):
+        return 1/(1+np.exp(-Z))
+
+    @staticmethod
     def feedforward(genome: Genome, x_input, y_out):
-        output = None
         graph, rev_graph = create_network(genome)
         layers = NeuralNetwork.find_layers(genome)
-        values = [0 for x in range(0, len(genome.node_genes))]
+        # values = [0 for x in range(0, len(genome.node_genes))]
         # for x in len(x_in):
         #     values[x] = x_in[x]
         error = []
         for xin, yout in list(zip(x_input, y_out)):
+            values = {index:xin[index] for index, x in enumerate(xin)}
+
             for layer in list(layers):
                 for node in layer:
-                    data = np.array(xin)
+                    data = np.array([values.get(x) for x in rev_graph.get(node)])
                     weights = np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)])
-                    values[node] = np.sum(data*np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)]))
-            output = np.array(values[len(genome.inputs): len(genome.inputs) + len(genome.outputs)])
+                    out = np.sum(data * weights)
+                    values[node] = out
+            # output = np.array(values[len(genome.inputs): len(genome.inputs) + len(genome.outputs)])
+            output = np.array([values.get(x) for x in genome.outputs])
+            output = NeuralNetwork.relu(output)
             mse = ((output - yout) ** 2).mean(axis=None)
             error.append(mse)
         return error

@@ -244,9 +244,11 @@ def test_create_network():
 
 def test_feedforward():
     g1 = GenomeFactory.create_genome(2, 1)
-    x = [[0, 0], [0,1], [1,1]]
+    x = [[0, 0], [0, 1], [1, 1]]
     y = [[0], [1], [0]]
-    NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
+    result = NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
+
+    assert (len(result) == 3)
 
 
 def test_find_layers():

@@ -10,7 +10,6 @@ from utils import InnovationNumber
 from connection_gene import ConnectionGene
 from node_gene import NodeGene
 
-
 class Genome:
     def __init__(self):
         self.key = 1
@@ -67,6 +66,30 @@ class Genome:
         for innov, conn in self.connection_genes.items():
             conns.append((conn.in_node_key, conn.out_node_key))
         return conns
+
+    def crossover(self, parent_genome):
+        offspring = Genome()
+        offspring.node_genes = copy.deepcopy(self.node_genes)
+        offspring.node_genes.update(parent_genome.node_genes)
+
+        set1 = set(self.connection_genes)
+        set2 = set(parent_genome.connection_genes)
+
+        total_set = set1.union(set2)
+        disjoint = total_set.difference(set1).union(total_set.difference(set2))
+        inner = set1.intersection(set2)
+
+        for connect in total_set:
+            # randomly inherit matching genes
+            if connect in inner:
+                chosen_genome = self if random.getrandbits(1) is 1 else parent_genome
+                offspring.connection_genes[connect] = chosen_genome.connection_genes[connect]
+            # inherit genes from more fit
+            if connect in disjoint:
+                chosen_genome = self if self.fitness > parent_genome.fitness else parent_genome
+                offspring.connection_genes[connect] = chosen_genome.connection_genes[connect]
+
+        return offspring
 
     def mutate_add_node(self):
         # pick a random connection and add a new node

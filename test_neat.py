@@ -4,8 +4,7 @@ import pytest
 import NeuralNetwork
 from config import Config
 from neat import compatibility_distance, sort_species, \
-    calculate_num_excess_disjoint_genes, crossover, \
-    create_population
+    calculate_num_excess_disjoint_genes, create_population
 from node_gene import NodeGene
 from utils import InnovationNumber
 from connection_gene import ConnectionGene
@@ -198,7 +197,7 @@ def test_crossover():
     genome1 = GenomeFactory.create_genome(2,1)
     genome2 = GenomeFactory.create_genome(2,1)
     genome2.mutate_add_node()
-    offspring = crossover(genome1, genome2)
+    offspring = genome1.crossover(genome2)
     assert (len(offspring.connection_genes.keys()) == 4)
     assert (offspring.connection_genes[7] == genome2.connection_genes[7])
 

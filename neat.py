@@ -1,9 +1,8 @@
 import random
 from collections import OrderedDict
 
-import NeuralNetwork
 from config import Config
-from genome import Genome, GenomeFactory
+from genome import Genome
 from enums.node_type import NodeType
 
 xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
@@ -74,34 +73,8 @@ def fitness():
     pass
 
 
-import copy
-
-
 # matching genes inherited randomly
 # disjoint genes (in middle) and excess genes (ends of genome) are inherited from more fit parent
-def crossover(genome1: Genome, genome2: Genome):
-    offspring = Genome()
-    offspring.node_genes = copy.deepcopy(genome1.node_genes)
-    offspring.node_genes.update(genome2.node_genes)
-
-    set1 = set(genome1.connection_genes)
-    set2 = set(genome2.connection_genes)
-
-    total_set = set1.union(set2)
-    disjoint = total_set.difference(set1).union(total_set.difference(set2))
-    inner = set1.intersection(set2)
-
-    for connect in total_set:
-        # randomly inherit matching genes
-        if connect in inner:
-            chosen_genome = genome1 if random.getrandbits(1) is 1 else genome2
-            offspring.connection_genes[connect] = chosen_genome.connection_genes[connect]
-        # inherit genes from more fit
-        if connect in disjoint:
-            chosen_genome = genome1 if genome1.fitness > genome2.fitness else genome2
-            offspring.connection_genes[connect] = chosen_genome.connection_genes[connect]
-
-    return offspring
 
 
 # split existing connection and place new node in between

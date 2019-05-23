@@ -10,7 +10,7 @@ from node_gene import NodeGene
 from utils import InnovationNumber
 from connection_gene import ConnectionGene
 from enums.node_type import NodeType
-from genome import GenomeFactory
+from genome import GenomeFactory, Genome
 
 
 def test_compatibility_distance():
@@ -185,41 +185,22 @@ def test_mutate_add_node():
     assert (second_new_out_node_key == prev_out)
 
 
-def create_with_hidden_layer(genome2):
-    innovation_num = InnovationNumber.innovation_num
-    new_node_key = 4
-    new_out_node_key = 3
-    conn_modifying_key = 2
-
-    genome2.node_genes[new_node_key] = NodeGene(new_node_key, NodeType.Hidden)
-
-    newcon = ConnectionGene()
-    newcon.innovation_num = innovation_num
-    newcon.in_node_key = new_node_key
-    newcon.out_node_key = new_out_node_key
-    InnovationNumber.innovation_num += 1
-
-
-    genome2.connection_genes[new_out_node_key] = newcon
-    genome2.connection_genes[conn_modifying_key].out_node_key = new_node_key
-
-    return genome2
-
-
 def create_disjoint_genomes():
     genome1 = GenomeFactory().create_genome(2, 1)
     genome1.fitness = 1
     genome2 = GenomeFactory().create_genome(2, 1)
     genome2.fitness = 3
-    genome2_hid = create_with_hidden_layer(genome2)
-    return genome1, genome2_hid
+    Genome.mutate_add_node(genome2)
+    return genome1, genome2
 
 
 def test_crossover():
-    genome1, genome2 = create_disjoint_genomes()
+    genome1 = GenomeFactory.create_genome(2,1)
+    genome2 = GenomeFactory.create_genome(2,1)
+    genome2.mutate_add_node()
     offspring = crossover(genome1, genome2)
-    assert (len(offspring.connection_genes.keys()) == 3)
-    assert (offspring.connection_genes[3] == genome2.connection_genes[3])
+    assert (len(offspring.connection_genes.keys()) == 4)
+    assert (offspring.connection_genes[7] == genome2.connection_genes[7])
 
 
 def test_create_genome():
@@ -251,7 +232,7 @@ def test_create_network():
 
 def test_feedforward():
     g1 = GenomeFactory.create_genome(2, 1)
-    x = [[0, 0], [0, 1], [1, 1], [1,0]]
+    x = [[0, 0], [0, 1], [1, 1], [1, 0]]
     y = [[0], [1], [0], [1]]
     result = NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
 

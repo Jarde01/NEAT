@@ -82,11 +82,17 @@ class NeuralNetwork:
         #     s = s.union(t)
         # return layers
         layers = []
-        _, rev_graph = genome.create_graphs
+        _, rev_graph = genome.create_graphs()
 
-        for node in genome.outputs:
-            if rev_graph.get(node):
-                print()
+        curr_layer = genome.outputs
+        layers.insert(0, set(curr_layer))
+        while len(curr_layer) > 0:
+            curr = []
+            # for all nodes in current layer, get the node above in the graph
+            for node in curr_layer:
+                curr.extend(rev_graph.get(node)) if rev_graph.get(node, None) is not None else curr
+            layers.insert(0, set(curr))
+            curr_layer = curr
 
         return layers
 

@@ -1,8 +1,9 @@
 import random
 from collections import OrderedDict
 
+from NeuralNetwork import NeuralNetwork
 from config import Config
-from genome import Genome
+from genome import Genome, GenomeFactory
 from enums.node_type import NodeType
 
 xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
@@ -149,14 +150,14 @@ def count_node_types(genome: Genome):
 6. take single genome then duplicate with mutations
 '''
 
-# x = [[0, 0], [0, 1], [1, 1], [1, 0]]
-# y = [[0], [1], [0], [1]]
-#
-# g = GenomeFactory.create_genome(2, 1)
-# pop = create_population(g)
-#
-# results = []
-# for genome in pop:
-#     results.append(sum(NeuralNetwork.NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y)))
-#
-# print()
+x = [[0, 0], [0, 1], [1, 1], [1, 0]]
+y = [[0], [1], [0], [1]]
+
+g = GenomeFactory.create_genome(2, 1)
+pop = create_population(g)
+
+results = []
+for genome in pop:
+    results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y)))
+
+print()

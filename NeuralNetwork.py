@@ -25,6 +25,7 @@ class NeuralNetwork:
     def tanh(x):
         return (1 - np.exp(-2 * x)) / (1 + np.exp(-2 * x))
 
+    #TODO: Sometimes layers don't contain output nodes
     @staticmethod
     def feedforward(genome, x_input, y_out):
         graph, rev_graph = genome.create_graphs()
@@ -36,41 +37,56 @@ class NeuralNetwork:
         error = []
         for xin, yout in list(zip(x_input, y_out)):
             values = {index: xin[index] for index, x in enumerate(xin)}
-
-            for layer in list(layers):
-                for node in layer:
-                    data = np.array([values.get(x) for x in rev_graph.get(node)])
+            all_layers = list(layers)
+            for index, layer in enumerate(all_layers[:1]):
+                # for layer_node in layer:
+                    # get data for whole layers
+                data = np.array([values.get(x) for x in layer])
+                # get weights for next nodes
+                for node in list(all_layers[index+1]):
                     weights = np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)])
-                    out = np.sum(data * weights)
+                    out = np.sum(data.reshape(-1,1) * weights.reshape(1, -1))
                     values[node] = NeuralNetwork.relu(out)
 
             output = np.array([values.get(x) for x in genome.outputs])
-            mse = ((output - yout) ** 2).mean(axis=None)
+            mse = ((output - np.array(yout)) ** 2).mean()
             error.append(mse)
         return error
 
+    # @staticmethod
+    # def compute_node(inputs: np.array, weights: np.array, activation_func):
+    #     # data = np.array([values.get(x) for x in rev_graph.get(node)])
+    #     # weights = np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)])
+    #     out = np.sum(data * weights)
+    #     values[node] = NeuralNetwork.relu(out)
+
+    #TODO: use reverse graph to generate layer set list
     @staticmethod
     def find_layers(genome):
+        # s = set(genome.inputs)
+        # layers = [s]
+        # connections = genome.list_connections()
+        # required = NeuralNetwork.find_required(genome, connections)
+        # while 1:
+        #     # Find candidate nodes c for the next layer.  These nodes should connect
+        #     # a node in s to a node not in s.
+        #     c = set(b for (a, b) in connections if a in s and b not in s)
+        #     # Keep only the used nodes whose entire input set is contained in s.
+        #     t = set()
+        #     for n in c:
+        #         if n in required and all(a in s for (a, b) in connections if b == n):
+        #             t.add(n)
+        #     if not t:
+        #         break
+        #     layers.append(t)
+        #     s = s.union(t)
+        # return layers
         layers = []
-        s = set(genome.inputs)
-        connections = genome.list_connections()
-        required = NeuralNetwork.find_required(genome, connections)
+        _, rev_graph = genome.create_graphs
 
-        while 1:
-            # Find candidate nodes c for the next layer.  These nodes should connect
-            # a node in s to a node not in s.
-            c = set(b for (a, b) in connections if a in s and b not in s)
-            # Keep only the used nodes whose entire input set is contained in s.
-            t = set()
-            for n in c:
-                if n in required and all(a in s for (a, b) in connections if b == n):
-                    t.add(n)
-
-            if not t:
-                break
-
-            layers.append(t)
-            s = s.union(t)
+        for node in genome.outputs:
+            if rev_graph.get(node):
+                print()
 
         return layers
 

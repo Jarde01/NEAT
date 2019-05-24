@@ -126,6 +126,7 @@ class Genome:
         self.connection_genes[InnovationNumber.innovation_num + 2] = new_connection_new_to_old
         return
 
+    # TODO: currently we can create cycles when adding a connection, only connect from hidden to hidden/output
     # add a new connection with a random weight to two previously unconnected nodes
     # connection to new node is 1, from new node to forward node is same as current weight
     def mutate_add_connection(self):
@@ -137,7 +138,8 @@ class Genome:
 
         available = [i for i, val in enumerate(adjacency_matrix) if int(val) is 0]
 
-        chosen_loc = available[random.randint(0, len(available) - 1)] + 1
+        # chose a location to attach a new connection to, minus the input nodes
+        chosen_loc = available[random.randint(len(self.inputs), len(available) - 1)] + 1
 
         connect_node_from = int(chosen_loc / len(self.node_genes))
         connect_node_to = chosen_loc % len(self.node_genes)

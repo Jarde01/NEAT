@@ -130,19 +130,28 @@ class Genome:
     # add a new connection with a random weight to two previously unconnected nodes
     # connection to new node is 1, from new node to forward node is same as current weight
     def mutate_add_connection(self):
-        adjacency_matrix = np.zeros((len(self.node_genes) ** 2,))
+        num_inputs = len(self.inputs)
+        num_outputs = len(self.outputs)
+        num_nodes = len(self.node_genes)
+        adjacency_matrix = np.zeros(num_nodes*num_nodes).reshape(num_nodes, num_nodes)
 
-        # Go through all connections and fill in edge matrix
-        for index, conn in self.connection_genes.items():
-            adjacency_matrix[conn.in_node_key * conn.out_node_key] = 1
+        while True:
+            # Go through all connections and fill in edge matrix
+            for index, conn in self.connection_genes.items():
+                adjacency_matrix[conn.in_node_key][conn.out_node_key] = 1
 
-        available = [i for i, val in enumerate(adjacency_matrix) if int(val) is 0]
+            # available = [i for i, val in enumerate(adjacency_matrix) if int(val) is 0]
+            # chose a location to attach a new connection to, minus the input nodes
+            # chosen_loc = available[random.randint(len(self.inputs), len(available) - 1)] + 1
+            # connect_node_from = int(chosen_loc / len(self.node_genes))
+            # connect_node_to = chosen_loc % len(self.node_genes)
 
-        # chose a location to attach a new connection to, minus the input nodes
-        chosen_loc = available[random.randint(len(self.inputs), len(available) - 1)] + 1
+            connect_node_from = random.randint(0, num_inputs*num_outputs-num_outputs)
+            connect_node_to = random.randint(num_inputs, num_inputs*num_outputs)
 
-        connect_node_from = int(chosen_loc / len(self.node_genes))
-        connect_node_to = chosen_loc % len(self.node_genes)
+            # Simple connecting to itself case
+            if adjacency_matrix[connect_node_to][connect_node_from] != 1:
+                break
 
         new_connection = ConnectionGene()
         new_connection.innovation_num = InnovationNumber.innovation_num

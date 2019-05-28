@@ -50,6 +50,7 @@ class NeuralNetwork:
 
             output = np.array([values.get(x) for x in genome.outputs])
             mse = ((output - np.array(yout)) ** 2).mean()
+            print(mse)
             error.append(mse)
         return error
 
@@ -86,14 +87,16 @@ class NeuralNetwork:
 
         curr_layer = genome.outputs
         layers.insert(0, set(curr_layer))
+        layer_count = 0
         while len(curr_layer) > 0:
+            print(f"curr_layer: {layer_count}")
             curr = []
             # for all nodes in current layer, get the node above in the graph
             for node in curr_layer:
                 curr.extend(rev_graph.get(node)) if rev_graph.get(node, None) is not None else curr
             layers.insert(0, set(curr))
             curr_layer = curr
-
+            layer_count += 1
         return layers
 
     @staticmethod

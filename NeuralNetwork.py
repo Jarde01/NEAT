@@ -38,14 +38,16 @@ class NeuralNetwork:
         for xin, yout in list(zip(x_input, y_out)):
             values = {index: xin[index] for index, x in enumerate(xin)}
             all_layers = list(layers)
-            for index, layer in enumerate(all_layers[:1]):
-                # for layer_node in layer:
-                    # get data for whole layers
-                data = np.array([values.get(x) for x in layer])
+            for index, layer in enumerate(all_layers[:-1]):
+                data = np.array([values.get(x) for x in layer]).reshape(1, -1)
                 # get weights for next nodes
-                for node in list(all_layers[index+1]):
-                    weights = np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)])
-                    out = np.sum(data.reshape(-1,1) * weights.reshape(1, -1))
+                next_layer = all_layers[index+1]
+                for node in list(next_layer):
+                    conns = rev_graph.get(node, [])
+                    conn_nodes = [genome.find_connection(in_node=x, out_node=node) for x in conns]
+                    temp_weights = [x.weight if x is not None else 0 for x in conn_nodes]
+                    weights = np.array(temp_weights).reshape(-1, 1)
+                    out = np.sum(data * weights)
                     values[node] = NeuralNetwork.relu(out)
 
             output = np.array([values.get(x) for x in genome.outputs])
@@ -94,7 +96,7 @@ class NeuralNetwork:
             # for all nodes in current layer, get the node above in the graph
             for node in curr_layer:
                 curr.extend(rev_graph.get(node)) if rev_graph.get(node, None) is not None else curr
-            layers.insert(0, set(curr))
+            layers.insert(0, set(curr)) if len(curr) > 0 else layers
             curr_layer = curr
             layer_count += 1
         return layers

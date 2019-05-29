@@ -67,6 +67,12 @@ class Genome:
             conns.append((conn.in_node_key, conn.out_node_key))
         return conns
 
+    def find_connection(self, in_node, out_node):
+        for conn in self.connection_genes.values():
+            if conn.in_node_key == in_node and conn.out_node_key == out_node:
+                return conn
+        return None
+
     def crossover(self, parent_genome):
         offspring = Genome()
         offspring.node_genes = copy.deepcopy(self.node_genes)
@@ -135,24 +141,34 @@ class Genome:
         num_nodes = len(self.node_genes)
         adjacency_matrix = np.zeros(num_nodes*num_nodes).reshape(num_nodes, num_nodes)
 
-        while True:
-            # Go through all connections and fill in edge matrix
-            for index, conn in self.connection_genes.items():
-                adjacency_matrix[conn.in_node_key][conn.out_node_key] = 1
+        # Go through all connections and fill in edge matrix
+        for index, conn in self.connection_genes.items():
+            adjacency_matrix[conn.in_node_key][conn.out_node_key] = 1
 
-            # available = [i for i, val in enumerate(adjacency_matrix) if int(val) is 0]
-            # chose a location to attach a new connection to, minus the input nodes
-            # chosen_loc = available[random.randint(len(self.inputs), len(available) - 1)] + 1
-            # connect_node_from = int(chosen_loc / len(self.node_genes))
-            # connect_node_to = chosen_loc % len(self.node_genes)
+        # available = [i for i, val in enumerate(adjacency_matrix) if int(val) is 0]
+        # chose a location to attach a new connection to, minus the input nodes
+        # chosen_loc = available[random.randint(len(self.inputs), len(available) - 1)] + 1
+        # connect_node_from = int(chosen_loc / len(self.node_genes))
+        # connect_node_to = chosen_loc % len(self.node_genes)
 
-            connect_node_from = random.randint(0, num_inputs*num_outputs-num_outputs)
-            connect_node_to = random.randint(num_inputs, num_inputs*num_outputs)
+        possible_from_nodes = [x for x in self.hiddens+self.inputs]
+        possible_to_nodes = [x for x in self.hiddens+self.outputs]
 
+        possible_combos = []
+        for from_node in possible_from_nodes:
+            for to_node in possible_to_nodes:
+                possible_combos.append((from_node, to_node))
+
+        found = False
+        while len(possible_combos)>0:
+            connect_node_from, connect_node_to = possible_combos.pop(random.randint(0, len(possible_combos)-1))
             # Simple connecting to itself case
-            if adjacency_matrix[connect_node_to][connect_node_from] != 1:
+            if adjacency_matrix[connect_node_from][connect_node_to] != 1:
+                found = True
                 break
 
+        if not found:
+            return
         new_connection = ConnectionGene()
         new_connection.innovation_num = InnovationNumber.innovation_num
         new_connection.weight = 1

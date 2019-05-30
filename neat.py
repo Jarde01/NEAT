@@ -63,11 +63,11 @@ def compatibility_distance(genome1: Genome, genome2: Genome):
     return distance
 
 
-# Best performing r% of each species is randomply mated to generate Nji offspring,
+# Best performing r% of each species is randomly mated to generate Nji offspring,
 # replacing the entire population of the species
-def fitness():
-    Nj = None  # num of old individuals
-    Nji = None  # num of individuals in species j
+def fitness(genome1: Genome, genome2: Genome):
+    Nj = len(genome1.node_genes) # num of old individuals
+    Nji = genome2 # num of individuals in species j
     fij = None  # adjusted fitness of individual i in species j
     f = 1  # mean adjusted fitness in the entire population
     Nji = sum(Nj * fij) / f
@@ -159,5 +159,7 @@ pop = create_population(g)
 results = []
 for genome in pop:
     results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y)))
+
+
 
 print()

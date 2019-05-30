@@ -56,34 +56,10 @@ class NeuralNetwork:
             error.append(mse)
         return error
 
-    # @staticmethod
-    # def compute_node(inputs: np.array, weights: np.array, activation_func):
-    #     # data = np.array([values.get(x) for x in rev_graph.get(node)])
-    #     # weights = np.array([genome.connection_genes.get(x).weight for x in rev_graph.get(node)])
-    #     out = np.sum(data * weights)
-    #     values[node] = NeuralNetwork.relu(out)
 
     #TODO: use reverse graph to generate layer set list
     @staticmethod
     def find_layers(genome):
-        # s = set(genome.inputs)
-        # layers = [s]
-        # connections = genome.list_connections()
-        # required = NeuralNetwork.find_required(genome, connections)
-        # while 1:
-        #     # Find candidate nodes c for the next layer.  These nodes should connect
-        #     # a node in s to a node not in s.
-        #     c = set(b for (a, b) in connections if a in s and b not in s)
-        #     # Keep only the used nodes whose entire input set is contained in s.
-        #     t = set()
-        #     for n in c:
-        #         if n in required and all(a in s for (a, b) in connections if b == n):
-        #             t.add(n)
-        #     if not t:
-        #         break
-        #     layers.append(t)
-        #     s = s.union(t)
-        # return layers
         layers = []
         _, rev_graph = genome.create_graphs()
 

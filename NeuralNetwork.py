@@ -27,7 +27,7 @@ class NeuralNetwork:
 
     #TODO: Sometimes layers don't contain output nodes
     @staticmethod
-    def feedforward(genome, x_input, y_out):
+    def feedforward(genome, x_input, y_out, fitness_fnc):
         graph, rev_graph = genome.create_graphs()
         layers = NeuralNetwork.find_layers(genome)
         connections = genome.list_connections()
@@ -54,6 +54,7 @@ class NeuralNetwork:
             mse = ((output - np.array(yout)) ** 2).mean()
             print(mse)
             error.append(mse)
+        genome.fitness = fitness_fnc(error)
         return error
 
 

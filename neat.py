@@ -65,7 +65,7 @@ def compatibility_distance(genome1: Genome, genome2: Genome):
 
 # Best performing r% of each species is randomly mated to generate Nji offspring,
 # replacing the entire population of the species
-def fitness(genome1: Genome, genome2: Genome):
+def fitness_sharing(genome1: Genome, genome2: Genome):
     Nj = len(genome1.node_genes) # num of old individuals
     Nji = genome2 # num of individuals in species j
     fij = None  # adjusted fitness of individual i in species j
@@ -157,8 +157,13 @@ g = GenomeFactory.create_genome(2, 1)
 pop = create_population(g)
 
 results = []
-for genome in pop:
-    results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y)))
+generations = 5
+for gen in range(0, generations):
+    for genome in pop:
+        results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y, fitness_fnc=sum)))
+        species = sort_species(pop)
+        new_genome = species[0][0].crossover(species[0][1])
+        pop = create_population(new_genome)
 
 
 

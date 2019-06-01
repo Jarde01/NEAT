@@ -10,6 +10,7 @@ from utils import InnovationNumber
 from connection_gene import ConnectionGene
 from node_gene import NodeGene
 
+
 class Genome:
     def __init__(self):
         self.key = 1
@@ -84,6 +85,9 @@ class Genome:
         total_set = set1.union(set2)
         disjoint = total_set.difference(set1).union(total_set.difference(set2))
         inner = set1.intersection(set2)
+        genome_one_max_innov_num = max(self.connection_genes.keys())
+        excess = set([x for x in parent_genome.connection_genes.keys() if x > genome_one_max_innov_num])
+        disjoint = disjoint - excess
 
         for connect in total_set:
             # randomly inherit matching genes
@@ -91,9 +95,13 @@ class Genome:
                 chosen_genome = self if random.getrandbits(1) is 1 else parent_genome
                 offspring.connection_genes[connect] = chosen_genome.connection_genes[connect]
             # inherit genes from more fit
-            if connect in disjoint:
-                chosen_genome = self if self.fitness > parent_genome.fitness else parent_genome
-                offspring.connection_genes[connect] = chosen_genome.connection_genes[connect]
+            elif connect in disjoint:
+                chosen_conn = self.connection_genes.get(connect,
+                                                        None) if not None else parent_genome.connection_genes.get(
+                    connect, None)
+                offspring.connection_genes[connect] = chosen_conn
+            elif connect in excess:
+                offspring.connection_genes[connect] = parent_genome.connection_genes[connect]
 
         return offspring
 
@@ -139,11 +147,13 @@ class Genome:
         num_inputs = len(self.inputs)
         num_outputs = len(self.outputs)
         num_nodes = len(self.node_genes)
-        adjacency_matrix = np.zeros(num_nodes*num_nodes).reshape(num_nodes, num_nodes)
+        # adjacency_matrix = np.zeros(num_nodes*num_nodes).reshape(num_nodes, num_nodes)
 
+        adj_dict = defaultdict(list)
         # Go through all connections and fill in edge matrix
         for index, conn in self.connection_genes.items():
-            adjacency_matrix[conn.in_node_key][conn.out_node_key] = 1
+            # adjacency_matrix[conn.in_node_key][conn.out_node_key] = 1
+            adj_dict[conn.in_node_key].append(conn.out_node_key)
 
         # available = [i for i, val in enumerate(adjacency_matrix) if int(val) is 0]
         # chose a location to attach a new connection to, minus the input nodes
@@ -151,8 +161,8 @@ class Genome:
         # connect_node_from = int(chosen_loc / len(self.node_genes))
         # connect_node_to = chosen_loc % len(self.node_genes)
 
-        possible_from_nodes = [x for x in self.hiddens+self.inputs]
-        possible_to_nodes = [x for x in self.hiddens+self.outputs]
+        possible_from_nodes = [x for x in self.hiddens + self.inputs]
+        possible_to_nodes = [x for x in self.hiddens + self.outputs]
 
         possible_combos = []
         for from_node in possible_from_nodes:
@@ -160,10 +170,11 @@ class Genome:
                 possible_combos.append((from_node, to_node))
 
         found = False
-        while len(possible_combos)>0:
-            connect_node_from, connect_node_to = possible_combos.pop(random.randint(0, len(possible_combos)-1))
+        while len(possible_combos) > 0:
+            connect_node_from, connect_node_to = possible_combos.pop(random.randint(0, len(possible_combos) - 1))
             # Simple connecting to itself case
-            if adjacency_matrix[connect_node_from][connect_node_to] != 1:
+            # if adjacency_matrix[connect_node_from][connect_node_to] != 1:
+            if connect_node_to not in adj_dict[connect_node_from]:
                 found = True
                 break
 

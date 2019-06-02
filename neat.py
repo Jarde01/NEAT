@@ -117,8 +117,11 @@ def create_population(init_genome: Genome):
         g = init_genome.copy()
         g.mutate_modify_weights() if random.uniform(0, 1) < float(
             Config.config['DefaultGenome']['bias_mutate_rate']) else g
-        g.mutate_add_connection() if random.uniform(0, 1) < float(
+
+        g.mutate_add_connection_v2() if random.uniform(0, 1) < float(
             Config.config['DefaultGenome']['bias_mutate_rate']) else g
+        # g.mutate_add_connection() if random.uniform(0, 1) < float(
+        #     Config.config['DefaultGenome']['bias_mutate_rate']) else g
         g.mutate_add_node() if random.uniform(0, 1) < float(Config.config['DefaultGenome']['bias_mutate_rate']) else g
         pop.append(g)
     return pop
@@ -161,9 +164,13 @@ generations = 5
 for gen in range(0, generations):
     for genome in pop:
         results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y, fitness_fnc=sum)))
-        species = sort_species(pop)
-        new_genome = species[0][0].crossover(species[0][1])
-        pop = create_population(new_genome)
+    print("Finished feedforward")
+    species_dict = sort_species(pop)
+    print("Finished speciation")
+    for index, species in species_dict.items():
+        # crossover the two best genomes from each species
+        new_genome = species[0].crossover(species[1])
+        pop.extend(create_population(new_genome))
 
 
 

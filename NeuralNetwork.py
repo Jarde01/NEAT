@@ -2,17 +2,6 @@ import numpy as np
 
 
 class NeuralNetwork:
-    # @staticmethod
-    # def create(genome: Genome, depth, input, output):
-    #     layers = []
-    #
-    #     x = Input(shape=(input,))
-    #     for x in range(0, depth):
-    #         x = Dense(10, activation='relu')(x)
-    #     all_layers = keras.layers.concatenate(layers)(x)
-    #     output = Dense(32)(all_layers)
-    #     return x
-
     @staticmethod
     def relu(x):
         return np.maximum(0, x)
@@ -30,7 +19,7 @@ class NeuralNetwork:
     def feedforward(genome, x_input, y_out, fitness_fnc):
         graph, rev_graph = genome.create_graphs()
         layers = NeuralNetwork.find_layers(genome)
-        connections = genome.list_connections()
+        # connections = genome.list_connections()
         # values = [0 for x in range(0, len(genome.node_genes))]
         # for x in len(x_in):
         #     values[x] = x_in[x]
@@ -52,13 +41,14 @@ class NeuralNetwork:
 
             output = np.array([values.get(x) for x in genome.outputs])
             mse = ((output - np.array(yout)) ** 2).mean()
-            print(mse)
+            # print(mse)
             error.append(mse)
         genome.fitness = fitness_fnc(error)
         return error
 
 
     #TODO: use reverse graph to generate layer set list
+    # BUG: infinite looping when finding layers (1 was connected to itself)
     @staticmethod
     def find_layers(genome):
         layers = []

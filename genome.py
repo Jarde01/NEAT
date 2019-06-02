@@ -4,6 +4,7 @@ from collections import defaultdict
 
 import numpy as np
 
+from NeuralNetwork import NeuralNetwork
 from enums.node_type import NodeType
 from config import Config
 from utils import InnovationNumber
@@ -31,10 +32,6 @@ class Genome:
         g.outputs = copy.deepcopy(self.outputs)
         g.hiddens = copy.deepcopy(self.hiddens)
         return g
-
-    def create_graph(self):
-        for key, node in self.connection_genes.items():
-            print(node)
 
     def run(self, x, y):
         # create graph
@@ -76,6 +73,11 @@ class Genome:
 
     def crossover(self, parent_genome):
         offspring = Genome()
+        offspring.inputs = copy.copy(self.inputs)
+        offspring.outputs = copy.copy(parent_genome.outputs)
+        offspring.hiddens = copy.copy(parent_genome.hiddens)
+        offspring.hiddens.extend(self.hiddens)
+
         offspring.node_genes = copy.deepcopy(self.node_genes)
         offspring.node_genes.update(parent_genome.node_genes)
 
@@ -96,6 +98,7 @@ class Genome:
                 offspring.connection_genes[connect] = chosen_genome.connection_genes[connect]
             # inherit genes from more fit
             elif connect in disjoint:
+                # TODO: not add the connection if the other note has less fitness?
                 chosen_conn = self.connection_genes.get(connect,
                                                         None) if not None else parent_genome.connection_genes.get(
                     connect, None)
@@ -144,6 +147,9 @@ class Genome:
     # add a new connection with a random weight to two previously unconnected nodes
     # connection to new node is 1, from new node to forward node is same as current weight
     def mutate_add_connection(self):
+        # All the inputs are connected
+        if len(self.hiddens) == 0:
+            return
         num_inputs = len(self.inputs)
         num_outputs = len(self.outputs)
         num_nodes = len(self.node_genes)
@@ -189,6 +195,29 @@ class Genome:
 
         self.connection_genes[InnovationNumber.innovation_num] = new_connection
         InnovationNumber.innovation_num += 1
+
+    def kahns_dag(self):
+        print()
+
+    def mutate_add_connection_v2(self):
+        if len(self.hiddens) == 0:
+            return
+        layers = NeuralNetwork.find_layers(self)
+        hidden_layers = layers[1:-1]
+        possible_from_layer = random.randint(0, len(hidden_layers)-1)
+        possible_to_layer = random.randint(1, len(hidden_layers))
+
+        from_node = possible_from_layer[random.randint(0, len(possible_from_layer) - 1)]
+        to_node = possible_to_layer[random.randint(0, len(possible_to_layer) - 1)]
+
+        # Create the connection
+        new_connection = ConnectionGene()
+        new_connection.innovation_num = InnovationNumber.innovation_num
+        new_connection.weight = 1
+        new_connection.in_node_key = from_node
+        new_connection.out_node_key = to_node
+        new_connection.enabled = True
+        print()
 
     def mutate_modify_weights(self):
         for conn in self.connection_genes.values():

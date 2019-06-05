@@ -57,15 +57,20 @@ class NeuralNetwork:
         curr_layer = genome.outputs
         layers.insert(0, set(curr_layer))
         layer_count = 0
+
         while len(curr_layer) > 0:
-            print(f"curr_layer: {layer_count}")
+            last_layer = curr_layer
+
+            # print(f"curr_layer: {layer_count}")
             curr = []
             # for all nodes in current layer, get the node above in the graph
             for node in curr_layer:
                 curr.extend(rev_graph.get(node)) if rev_graph.get(node, None) is not None else curr
             layers.insert(0, set(curr)) if len(curr) > 0 else layers
+
             curr_layer = curr
             layer_count += 1
+
         return layers
 
     @staticmethod

@@ -1,3 +1,4 @@
+import copy
 import random
 from collections import OrderedDict
 
@@ -118,8 +119,12 @@ def create_population(init_genome: Genome):
         g.mutate_modify_weights() if random.uniform(0, 1) < float(
             Config.config['DefaultGenome']['bias_mutate_rate']) else g
 
-        g.mutate_add_connection_v2() if random.uniform(0, 1) < float(
+        g.mutate_add_connection_v4() if random.uniform(0, 1) < float(
             Config.config['DefaultGenome']['bias_mutate_rate']) else g
+        # g.mutate_add_connection_v3() if random.uniform(0, 1) < float(
+        #     Config.config['DefaultGenome']['bias_mutate_rate']) else g
+        # g.mutate_add_connection_v2() if random.uniform(0, 1) < float(
+        #     Config.config['DefaultGenome']['bias_mutate_rate']) else g
         # g.mutate_add_connection() if random.uniform(0, 1) < float(
         #     Config.config['DefaultGenome']['bias_mutate_rate']) else g
         g.mutate_add_node() if random.uniform(0, 1) < float(Config.config['DefaultGenome']['bias_mutate_rate']) else g
@@ -169,7 +174,7 @@ for gen in range(0, generations):
     print("Finished speciation")
     for index, species in species_dict.items():
         # crossover the two best genomes from each species
-        new_genome = species[0].crossover(species[1])
+        new_genome = species[0].crossover(species[1] if len(species) >=2 else copy.deepcopy(species[0]))
         pop.extend(create_population(new_genome))
 
 

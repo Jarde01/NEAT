@@ -99,9 +99,10 @@ class Genome:
             # inherit genes from more fit
             elif connect in disjoint:
                 # TODO: not add the connection if the other note has less fitness?
-                chosen_conn = self.connection_genes.get(connect,
-                                                        None) if not None else parent_genome.connection_genes.get(
-                    connect, None)
+                # BUG: chosen connection is None because chosen connection doesn't exist in either genome?
+                chosen_conn = self.connection_genes.get(connect, None) \
+                    if self.connection_genes.get(connect, None) is not None \
+                    else parent_genome.connection_genes.get(connect)
                 offspring.connection_genes[connect] = chosen_conn
             elif connect in excess:
                 offspring.connection_genes[connect] = parent_genome.connection_genes[connect]
@@ -203,8 +204,8 @@ class Genome:
         if len(self.hiddens) == 0:
             return
         layers = NeuralNetwork.find_layers(self)
-        hidden_layers = layers[1:-1]
-        possible_from_layer = random.randint(0, len(hidden_layers)-1)
+        hidden_layers = layers[1:]
+        possible_from_layer = random.randint(0, len(hidden_layers) - 1)
         possible_to_layer = random.randint(1, len(hidden_layers))
 
         from_node = possible_from_layer[random.randint(0, len(possible_from_layer) - 1)]
@@ -217,7 +218,84 @@ class Genome:
         new_connection.in_node_key = from_node
         new_connection.out_node_key = to_node
         new_connection.enabled = True
-        print()
+
+    def mutate_add_connection_v3(self):
+        if len(self.hiddens) == 0:
+            return
+        layers = NeuralNetwork.find_layers(self)
+
+        potential_nodes = self.hiddens + self.outputs
+
+        if len(potential_nodes) < 2:
+            return
+
+        node_1 = potential_nodes.pop(random.randint(0, len(potential_nodes) - 1))
+        node_2 = potential_nodes.pop(random.randint(0, len(potential_nodes) - 1))
+        from_node = None
+        to_node = None
+        for layer in layers:
+            if node_1 in layer and node_2 in layer:
+                from_node = node_1
+                to_node = node_2
+                break
+            elif node_1 in layer:
+                from_node = node_1
+                to_node = node_2
+                break
+            elif node_2 in layer:
+                from_node = node_2
+                to_node = node_1
+                break
+
+        # Create the connection
+        new_connection = ConnectionGene()
+        new_connection.innovation_num = InnovationNumber.innovation_num
+        new_connection.weight = 1
+        new_connection.in_node_key = from_node
+        new_connection.out_node_key = to_node
+        new_connection.enabled = True
+
+    def mutate_add_connection_v4(self):
+        curr_connections = self.list_connections()
+
+        possible_from_nodes = {x for x in self.hiddens + self.inputs}
+        possible_to_nodes = {x for x in self.hiddens + self.outputs}
+
+        possible_combos = []
+        for from_node in possible_from_nodes:
+            for to_node in possible_to_nodes:
+                possible_combos.append((from_node, to_node))
+
+        while len(possible_combos) > 0:
+            random_conn = possible_combos.pop(random.randint(0, len(possible_combos) - 1))
+            if self.creates_cycle(curr_connections, random_conn):
+                new_connection = ConnectionGene()
+                new_connection.innovation_num = InnovationNumber.innovation_num
+                new_connection.weight = 1
+                new_connection.in_node_key = random_conn[0]
+                new_connection.out_node_key = random_conn[1]
+                new_connection.enabled = True
+
+    @staticmethod
+    # https://github.com/CodeReclaimers/neat-python/blob/master/neat/graphs.py
+    def creates_cycle(connections, test):
+        i, o = test
+        if i == o:
+            return True
+
+        visited = {o}
+        while True:
+            num_added = 0
+            for a, b in connections:
+                if a in visited and b not in visited:
+                    if b == i:
+                        return True
+
+                    visited.add(b)
+                    num_added += 1
+
+            if num_added == 0:
+                return False
 
     def mutate_modify_weights(self):
         for conn in self.connection_genes.values():

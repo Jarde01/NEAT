@@ -67,8 +67,8 @@ def compatibility_distance(genome1: Genome, genome2: Genome):
 # Best performing r% of each species is randomly mated to generate Nji offspring,
 # replacing the entire population of the species
 def fitness_sharing(genome1: Genome, genome2: Genome):
-    Nj = len(genome1.node_genes) # num of old individuals
-    Nji = genome2 # num of individuals in species j
+    Nj = len(genome1.node_genes)  # num of old individuals
+    Nji = genome2  # num of individuals in species j
     fij = None  # adjusted fitness of individual i in species j
     f = 1  # mean adjusted fitness in the entire population
     Nji = sum(Nj * fij) / f
@@ -112,25 +112,14 @@ def same_species(genome1, genome2):
     return same
 
 
-def create_population(init_genome: Genome):
+def create_population(init_genome: Genome, ratio: int = 1):
     pop = []
-    for x in range(0, int(Config.config['NEAT']['pop_size'])):
-        g = init_genome.copy()
-        g.mutate_modify_weights() if random.uniform(0, 1) < float(
-            Config.config['DefaultGenome']['bias_mutate_rate']) else g
 
-        g.mutate_add_connection_v4() if random.uniform(0, 1) < float(
-            Config.config['DefaultGenome']['bias_mutate_rate']) else g
-        # g.mutate_add_connection_v3() if random.uniform(0, 1) < float(
-        #     Config.config['DefaultGenome']['bias_mutate_rate']) else g
-        # g.mutate_add_connection_v2() if random.uniform(0, 1) < float(
-        #     Config.config['DefaultGenome']['bias_mutate_rate']) else g
-        # g.mutate_add_connection() if random.uniform(0, 1) < float(
-        #     Config.config['DefaultGenome']['bias_mutate_rate']) else g
-        g.mutate_add_node() if random.uniform(0, 1) < float(Config.config['DefaultGenome']['bias_mutate_rate']) else g
+    for x in range(0, int(Config.config['NEAT']['pop_size']) * ratio):
+        g = init_genome.copy()
+        g.mutate()
         pop.append(g)
     return pop
-
 
 def count_node_types(genome: Genome):
     num_in, num_hid, num_out = 0, 0, 0
@@ -142,6 +131,43 @@ def count_node_types(genome: Genome):
         elif node_gene.node_type == NodeType.Output:
             num_out += 1
     return num_in, num_hid, num_out
+
+
+def get_best_genomes(species, ratio: float = None, amount: int = None):
+    species.sort(key=lambda x: x.fitness, reverse=True)
+    top_x = None
+
+    if ratio is None and amount is None:
+        top_x = int(len(species) * float(Config.config['NEAT']['best_mating_ratio']))
+    elif ratio is not None:
+        top_x = ratio
+    elif amount is not None:
+        top_x = amount
+
+    best_x_genomes = species[:top_x]
+    return best_x_genomes
+
+
+def calculate_new_number_of_species(species):
+    species_count = len(species)
+    adj_fitnesses = [x.fitness / species_count for x in species]
+
+    mean_adj_fit = sum(adj_fitnesses) / species_count
+    result = int(sum(adj_fitnesses) / mean_adj_fit)
+    return result
+
+
+def crossover_species(best_species, num_genomes_to_create):
+    new_species = []
+    num_species = len(best_species)
+
+    for x in range(0, num_genomes_to_create):
+        parent1 = best_species[random.randint(0, num_species - 1)]
+        parent2 = best_species[random.randint(0, num_species - 1)]
+        offspring = parent1.crossover(parent2)
+        offspring.mutate()
+        new_species.append(offspring)
+    return new_species
 
 
 # To implement:
@@ -166,17 +192,23 @@ pop = create_population(g)
 
 results = []
 generations = 5
+
 for gen in range(0, generations):
     for genome in pop:
         results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y, fitness_fnc=sum)))
     print("Finished feedforward")
     species_dict = sort_species(pop)
     print("Finished speciation")
+
+    new_pop = []
     for index, species in species_dict.items():
         # crossover the two best genomes from each species
-        new_genome = species[0].crossover(species[1] if len(species) >=2 else copy.deepcopy(species[0]))
-        pop.extend(create_population(new_genome))
+        new_num_species = calculate_new_number_of_species(species)
+        best_genomes = get_best_genomes(species)
+        new_species = crossover_species(best_genomes, new_num_species)
+        new_pop.extend(new_species)
+    pop = new_pop
 
-
+best_genome = get_best_genomes(pop, amount=1)
 
 print()

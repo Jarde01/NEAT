@@ -18,9 +18,9 @@ class Genome:
         self.fitness = 0
         self.connection_genes = {}
         self.node_genes = {}
-        self.inputs = []
-        self.outputs = []
-        self.hiddens = []
+        self.inputs = set()
+        self.outputs = set()
+        self.hiddens = set()
 
     def copy(self):
         g = Genome()
@@ -32,22 +32,6 @@ class Genome:
         g.outputs = copy.deepcopy(self.outputs)
         g.hiddens = copy.deepcopy(self.hiddens)
         return g
-
-    def run(self, x, y):
-        # create graph
-        graph = self.create_graph()
-
-        print("test")
-        # # find the input nodes
-        # for input in zip(x, y):
-        #     for index, val_tuple in enumerate(input):
-        #         x, y = val_tuple
-        #         next = self.connection_genes[index].out_node_key
-        #         while next is not None:
-        #             result = self.connection_genes[index].pass_value(x)
-        #         pass
-
-        pass
 
     def create_graphs(self):
         network = defaultdict(list)
@@ -71,12 +55,20 @@ class Genome:
                 return conn
         return None
 
+    def mutate(self):
+        self.mutate_modify_weights() if random.uniform(0, 1) < float(
+            Config.config['DefaultGenome']['bias_mutate_rate']) else self
+        self.mutate_add_connection_v4() if random.uniform(0, 1) < float(
+            Config.config['DefaultGenome']['bias_mutate_rate']) else self
+        self.mutate_add_node() if random.uniform(0, 1) < float(
+            Config.config['DefaultGenome']['bias_mutate_rate']) else self
+
     def crossover(self, parent_genome):
         offspring = Genome()
         offspring.inputs = copy.copy(self.inputs)
         offspring.outputs = copy.copy(parent_genome.outputs)
         offspring.hiddens = copy.copy(parent_genome.hiddens)
-        offspring.hiddens.extend(self.hiddens)
+        offspring.hiddens.update(self.hiddens)
 
         offspring.node_genes = copy.deepcopy(self.node_genes)
         offspring.node_genes.update(parent_genome.node_genes)
@@ -122,7 +114,7 @@ class Genome:
         new_connection_new_to_old = ConnectionGene()
         new_connection_old_to_new = ConnectionGene()
         new_gene = NodeGene(nodenum=len(self.node_genes) + 1, nodetype=NodeType.Hidden)
-        self.hiddens.append(new_gene.node_number)
+        self.hiddens.add(new_gene.node_number)
         self.node_genes[len(self.node_genes) + 1] = new_gene
 
         # new connection from previous node to new node
@@ -258,8 +250,8 @@ class Genome:
     def mutate_add_connection_v4(self):
         curr_connections = self.list_connections()
 
-        possible_from_nodes = {x for x in self.hiddens + self.inputs}
-        possible_to_nodes = {x for x in self.hiddens + self.outputs}
+        possible_from_nodes = self.hiddens.union(self.inputs)
+        possible_to_nodes = self.hiddens.union(self.outputs)
 
         possible_combos = []
         for from_node in possible_from_nodes:
@@ -313,7 +305,7 @@ class GenomeFactory:
             n = NodeGene(nodenum=curr_gene_num, nodetype=NodeType.Input)
             genome.node_genes[curr_gene_num] = n
             input_genes.append(n)
-            genome.inputs.append(curr_gene_num)
+            genome.inputs.add(curr_gene_num)
             curr_gene_num += 1
 
         output_genes = []
@@ -321,7 +313,7 @@ class GenomeFactory:
             n = NodeGene(nodenum=curr_gene_num, nodetype=NodeType.Output)
             output_genes.append(n)
             genome.node_genes[curr_gene_num] = n
-            genome.outputs.append(curr_gene_num)
+            genome.outputs.add(curr_gene_num)
             curr_gene_num += 1
 
         # connect all the input to the output genes

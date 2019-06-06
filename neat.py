@@ -2,6 +2,8 @@ import copy
 import random
 from collections import OrderedDict
 
+import math
+
 from NeuralNetwork import NeuralNetwork
 from config import Config
 from genome import Genome, GenomeFactory
@@ -138,7 +140,7 @@ def get_best_genomes(species, ratio: float = None, amount: int = None):
     top_x = None
 
     if ratio is None and amount is None:
-        top_x = int(len(species) * float(Config.config['NEAT']['best_mating_ratio']))
+        top_x = math.ceil(len(species) * float(Config.config['NEAT']['best_mating_ratio']))
     elif ratio is not None:
         top_x = ratio
     elif amount is not None:
@@ -162,8 +164,8 @@ def crossover_species(best_species, num_genomes_to_create):
     num_species = len(best_species)
 
     for x in range(0, num_genomes_to_create):
-        parent1 = best_species[random.randint(0, num_species - 1)]
-        parent2 = best_species[random.randint(0, num_species - 1)]
+        parent1 = best_species[random.randint(0, num_species)-1]
+        parent2 = best_species[random.randint(0, num_species)-1]
         offspring = parent1.crossover(parent2)
         offspring.mutate()
         new_species.append(offspring)
@@ -198,6 +200,7 @@ for gen in range(0, generations):
         results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y, fitness_fnc=sum)))
     print("Finished feedforward")
     species_dict = sort_species(pop)
+    print(len(species_dict))
     print("Finished speciation")
 
     new_pop = []

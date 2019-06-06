@@ -63,6 +63,8 @@ class Genome:
         self.mutate_add_node() if random.uniform(0, 1) < float(
             Config.config['DefaultGenome']['bias_mutate_rate']) else self
 
+    # TODO BUG: currently offspring can contain multipls of same connection,
+    #  due to different innovation numbers
     def crossover(self, parent_genome):
         offspring = Genome()
         offspring.inputs = copy.copy(self.inputs)
@@ -70,8 +72,8 @@ class Genome:
         offspring.hiddens = copy.copy(parent_genome.hiddens)
         offspring.hiddens.update(self.hiddens)
 
-        offspring.node_genes = copy.deepcopy(self.node_genes)
-        offspring.node_genes.update(parent_genome.node_genes)
+        # offspring.node_genes = copy.deepcopy(self.node_genes)
+        # offspring.node_genes.update(parent_genome.node_genes)
 
         set1 = set(self.connection_genes)
         set2 = set(parent_genome.connection_genes)
@@ -86,7 +88,8 @@ class Genome:
         for connect in total_set:
             # randomly inherit matching genes
             if connect in inner:
-                chosen_genome = self if random.getrandbits(1) is 1 else parent_genome
+                # chosen_genome = self if random.getrandbits(1) is 1 else parent_genome
+                chosen_genome = self if self.fitness >= parent_genome.fitness else parent_genome
                 offspring.connection_genes[connect] = chosen_genome.connection_genes[connect]
             # inherit genes from more fit
             elif connect in disjoint:
@@ -248,7 +251,7 @@ class Genome:
         new_connection.enabled = True
 
     def mutate_add_connection_v4(self):
-        curr_connections = self.list_connections()
+        curr_connections = set(self.list_connections())
 
         possible_from_nodes = self.hiddens.union(self.inputs)
         possible_to_nodes = self.hiddens.union(self.outputs)
@@ -256,7 +259,8 @@ class Genome:
         possible_combos = []
         for from_node in possible_from_nodes:
             for to_node in possible_to_nodes:
-                possible_combos.append((from_node, to_node))
+                if (from_node, to_node) not in curr_connections:
+                    possible_combos.append((from_node, to_node))
 
         while len(possible_combos) > 0:
             random_conn = possible_combos.pop(random.randint(0, len(possible_combos) - 1))

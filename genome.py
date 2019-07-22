@@ -37,7 +37,7 @@ class Genome:
         network = defaultdict(list)
         rev_network = defaultdict(list)
 
-        for innov, conn in self.connection_genes.items():
+        for innov, conn in [(i,x) for i, x in self.connection_genes.items() if x.enabled is True]:
             network[conn.in_node_key].append(conn.out_node_key)
             rev_network[conn.out_node_key].append(conn.in_node_key)
 
@@ -58,7 +58,7 @@ class Genome:
     def mutate(self):
         self.mutate_modify_weights() if random.uniform(0, 1) < float(
             Config.config['DefaultGenome']['bias_mutate_rate']) else self
-        self.mutate_add_connection_v4() if random.uniform(0, 1) < float(
+        self.mutate_add_connection_v5() if random.uniform(0, 1) < float(
             Config.config['DefaultGenome']['bias_mutate_rate']) else self
         self.mutate_add_node() if random.uniform(0, 1) < float(
             Config.config['DefaultGenome']['bias_mutate_rate']) else self
@@ -271,6 +271,29 @@ class Genome:
                 new_connection.in_node_key = random_conn[0]
                 new_connection.out_node_key = random_conn[1]
                 new_connection.enabled = True
+        return
+
+    def mutate_add_connection_v5(self):
+        layers = NeuralNetwork.find_layers(self)
+        connections = set(self.list_connections())
+
+        possible_conns = []
+        for index, layer in enumerate(layers[:-1]):
+            for from_node in layer:
+                for to_node in layers[index+1]:
+                    if (from_node, to_node) not in connections:
+                        possible_conns.append((from_node, to_node))
+
+        if len(possible_conns) > 0:
+            random_conn = possible_conns.pop(random.randint(0, len(possible_conns) - 1))
+            new_connection = ConnectionGene()
+            new_connection.innovation_num = InnovationNumber.innovation_num
+            new_connection.weight = 1
+            new_connection.in_node_key = random_conn[0]
+            new_connection.out_node_key = random_conn[1]
+            new_connection.enabled = True
+        return
+
 
     @staticmethod
     # https://github.com/CodeReclaimers/neat-python/blob/master/neat/graphs.py
@@ -292,6 +315,7 @@ class Genome:
 
             if num_added == 0:
                 return False
+
 
     def mutate_modify_weights(self):
         for conn in self.connection_genes.values():

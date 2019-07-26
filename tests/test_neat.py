@@ -1,15 +1,10 @@
 import copy
-import pytest
 
-import NeuralNetwork
 from config import Config
-from neat import compatibility_distance, sort_species, \
+import src.NeuralNetwork
+from src.neat import compatibility_distance, sort_species, \
     calculate_num_excess_disjoint_genes, create_population
-from node_gene import NodeGene
-from utils import InnovationNumber
-from connection_gene import ConnectionGene
-from enums.node_type import NodeType
-from genome import GenomeFactory, Genome
+from src.genome import GenomeFactory, Genome
 
 
 def test_compatibility_distance():
@@ -233,7 +228,7 @@ def test_feedforward():
     g1 = GenomeFactory.create_genome(2, 1)
     x = [[0, 0], [0, 1], [1, 1], [1, 0]]
     y = [[0], [1], [0], [1]]
-    result = NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
+    result = src.NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
 
     assert (len(result) == 4)
 
@@ -241,11 +236,11 @@ def test_feedforward():
 def test_find_layers():
     g1 = GenomeFactory.create_genome(2, 1)
 
-    l = NeuralNetwork.NeuralNetwork.find_layers(g1)
+    l = src.NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l) == 1)
 
     g1.mutate_add_node()
-    l2 = NeuralNetwork.NeuralNetwork.find_layers(g1)
+    l2 = src.NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l2) == 2)
 
     g1.mutate_add_node()
@@ -255,5 +250,5 @@ def test_find_layers():
     g1.mutate_add_node()
     g1.mutate_add_node()
 
-    l3 = NeuralNetwork.NeuralNetwork.find_layers(g1)
+    l3 = src.NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l3) > 2)

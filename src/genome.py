@@ -2,12 +2,10 @@ import copy
 import random
 from collections import defaultdict
 
-import numpy as np
-
 from NeuralNetwork import NeuralNetwork
 from enums.node_type import NodeType
 from config import Config
-from utils import InnovationNumber
+from src.utils import InnovationNumber
 from connection_gene import ConnectionGene
 from node_gene import NodeGene
 

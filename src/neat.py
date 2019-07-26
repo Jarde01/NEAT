@@ -186,32 +186,33 @@ def crossover_species(best_species, num_genomes_to_create):
 6. take single genome then duplicate with mutations
 '''
 
-x = [[0, 0], [0, 1], [1, 1], [1, 0]]
-y = [[0], [1], [0], [1]]
+if __name__ == '__main__':
+    x = [[0, 0], [0, 1], [1, 1], [1, 0]]
+    y = [[0], [1], [0], [1]]
 
-g = GenomeFactory.create_genome(2, 1)
-pop = create_population(g)
+    g = GenomeFactory.create_genome(2, 1)
+    pop = create_population(g)
 
-results = []
-generations = 5
+    results = []
+    generations = 5
 
-for gen in range(0, generations):
-    for genome in pop:
-        results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y, fitness_fnc=sum)))
-    print("Finished feedforward")
-    species_dict = sort_species(pop)
-    print(len(species_dict))
-    print("Finished speciation")
+    for gen in range(0, generations):
+        for genome in pop:
+            results.append(sum(NeuralNetwork.feedforward(genome=genome, x_input=x, y_out=y, fitness_fnc=sum)))
+        print("Finished feedforward")
+        species_dict = sort_species(pop)
+        print(len(species_dict))
+        print("Finished speciation")
 
-    new_pop = []
-    for index, species in species_dict.items():
-        # crossover the two best genomes from each species
-        new_num_species = calculate_new_number_of_species(species)
-        best_genomes = get_best_genomes(species)
-        new_species = crossover_species(best_genomes, new_num_species)
-        new_pop.extend(new_species)
-    pop = new_pop
+        new_pop = []
+        for index, species in species_dict.items():
+            # crossover the two best genomes from each species
+            new_num_species = calculate_new_number_of_species(species)
+            best_genomes = get_best_genomes(species)
+            new_species = crossover_species(best_genomes, new_num_species)
+            new_pop.extend(new_species)
+        pop = new_pop
 
-best_genome = get_best_genomes(pop, amount=1)
+    best_genome = get_best_genomes(pop, amount=1)
 
-print()
+    print()

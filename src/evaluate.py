@@ -1,8 +1,5 @@
 import gym
 
-from neat import create_population
-from genome import GenomeFactory, create_graphs
-
 env = gym.make("CartPole-v1")
 observation = env.reset()
 

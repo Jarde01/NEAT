@@ -49,6 +49,7 @@ class NeuralNetwork:
 
     #TODO: use reverse graph to generate layer set list
     # BUG: infinite looping when finding layers (1 was connected to itself)
+    # BUG: Sometimes nodes are gone from the list of layers (0 was missing at 4 connections)
     @staticmethod
     def find_layers(genome):
         layers = []

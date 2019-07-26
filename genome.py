@@ -278,7 +278,7 @@ class Genome:
         connections = set(self.list_connections())
 
         possible_conns = []
-        for index, layer in enumerate(layers[:-1]):
+        for index, layer in enumerate(layers[1:-1]):
             for from_node in layer:
                 for to_node in layers[index+1]:
                     if (from_node, to_node) not in connections:

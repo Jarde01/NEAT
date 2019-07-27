@@ -1,15 +1,19 @@
 import copy
 from unittest.mock import patch
 
-from src.genome import GenomeFactory, Genome
+
+# from genome import GenomeFactory, Genome
 # from config import Config
-# import src.NeuralNetwork
-from src.neat import compatibility_distance, sort_species, \
-    calculate_num_excess_disjoint_genes, create_population
+# # import src.NeuralNetwork
+# from neat import compatibility_distance, sort_species, \
+#     calculate_num_excess_disjoint_genes, create_population
 
 
-@patch('src.neat.Config')
+@patch('src.genome.Config.config')
 def test_compatibility_distance(mock_config):
+    from src.genome import GenomeFactory
+    from neat import compatibility_distance
+
     mock_config['DefaultGenome']['constant_excess'] = 1
 
     num_input = 1

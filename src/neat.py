@@ -1,13 +1,11 @@
-import copy
+import math
 import random
 from collections import OrderedDict
 
-import math
-
-from NeuralNetwork import NeuralNetwork
 from config import Config
-from genome import Genome, GenomeFactory
-from enums.node_type import NodeType
+from src.NeuralNetwork import NeuralNetwork
+from src.enums.node_type import NodeType
+from src.genome import Genome, GenomeFactory
 
 xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
 xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
@@ -68,12 +66,7 @@ def compatibility_distance(genome1: Genome, genome2: Genome):
 
 # Best performing r% of each species is randomly mated to generate Nji offspring,
 # replacing the entire population of the species
-def fitness_sharing(genome1: Genome, genome2: Genome):
-    Nj = len(genome1.node_genes)  # num of old individuals
-    Nji = genome2  # num of individuals in species j
-    fij = None  # adjusted fitness of individual i in species j
-    f = 1  # mean adjusted fitness in the entire population
-    Nji = sum(Nj * fij) / f
+def fitness_sharing(genome1: Genome):
     pass
 
 

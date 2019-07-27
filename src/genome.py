@@ -2,12 +2,13 @@ import copy
 import random
 from collections import defaultdict
 
-from NeuralNetwork import NeuralNetwork
-from enums.node_type import NodeType
+from pip._internal.cli.cmdoptions import src
+
 from config import Config
+from src.connection_gene import ConnectionGene
+from src.enums.node_type import NodeType
+from src.node_gene import NodeGene
 from src.utils import InnovationNumber
-from connection_gene import ConnectionGene
-from node_gene import NodeGene
 
 
 class Genome:
@@ -142,11 +143,9 @@ class Genome:
     # connection to new node is 1, from new node to forward node is same as current weight
     def mutate_add_connection(self):
         # All the inputs are connected
+        global connect_node_to, connect_node_from
         if len(self.hiddens) == 0:
             return
-        num_inputs = len(self.inputs)
-        num_outputs = len(self.outputs)
-        num_nodes = len(self.node_genes)
         # adjacency_matrix = np.zeros(num_nodes*num_nodes).reshape(num_nodes, num_nodes)
 
         adj_dict = defaultdict(list)
@@ -190,13 +189,14 @@ class Genome:
         self.connection_genes[InnovationNumber.innovation_num] = new_connection
         InnovationNumber.innovation_num += 1
 
-    def kahns_dag(self):
+    @staticmethod
+    def kahns_dag():
         print()
 
     def mutate_add_connection_v2(self):
         if len(self.hiddens) == 0:
             return
-        layers = NeuralNetwork.find_layers(self)
+        layers = src.NeuralNetwork.find_layers(self)
         hidden_layers = layers[1:]
         possible_from_layer = random.randint(0, len(hidden_layers) - 1)
         possible_to_layer = random.randint(1, len(hidden_layers))
@@ -215,7 +215,7 @@ class Genome:
     def mutate_add_connection_v3(self):
         if len(self.hiddens) == 0:
             return
-        layers = NeuralNetwork.find_layers(self)
+        layers = src.NeuralNetwork.find_layers(self)
 
         potential_nodes = self.hiddens + self.outputs
 
@@ -272,7 +272,7 @@ class Genome:
         return
 
     def mutate_add_connection_v5(self):
-        layers = NeuralNetwork.find_layers(self)
+        layers = src.NeuralNetwork.find_layers(self)
         connections = set(self.list_connections())
 
         possible_conns = []

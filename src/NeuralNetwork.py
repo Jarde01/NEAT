@@ -60,7 +60,6 @@ class NeuralNetwork:
         layer_count = 0
 
         while len(curr_layer) > 0:
-            last_layer = curr_layer
 
             # print(f"curr_layer: {layer_count}")
             curr = []

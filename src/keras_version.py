@@ -1,11 +1,8 @@
-import tensorflow as tf
-import numpy as np
 import random
-import enum
-import keras
-from keras.models import Sequential
+
+import numpy as np
 from keras.layers import Dense, Activation
-from keras.optimizers import SGD
+from keras.models import Sequential
 
 innovation_number = 0
 

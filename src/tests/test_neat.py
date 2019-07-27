@@ -1,13 +1,17 @@
 import copy
+from unittest.mock import patch
 
-from config import Config
-import src.NeuralNetwork
+from src.genome import GenomeFactory, Genome
+# from config import Config
+# import src.NeuralNetwork
 from src.neat import compatibility_distance, sort_species, \
     calculate_num_excess_disjoint_genes, create_population
-from src.genome import GenomeFactory, Genome
 
 
-def test_compatibility_distance():
+@patch('src.neat.Config')
+def test_compatibility_distance(mock_config):
+    mock_config['DefaultGenome']['constant_excess'] = 1
+
     num_input = 1
     num_output = 1
 
@@ -30,7 +34,7 @@ def test_sort_species_multiple():
     num_input = 3
     num_output = 2
     num_genomes = 5
-
+    Config = {'config'}
     Config.config['DefaultGenome']['compatibility_threshold'] = '0.1'
 
     genomes = []
@@ -228,7 +232,7 @@ def test_feedforward():
     g1 = GenomeFactory.create_genome(2, 1)
     x = [[0, 0], [0, 1], [1, 1], [1, 0]]
     y = [[0], [1], [0], [1]]
-    result = src.NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
+    result = NeuralNetwork.NeuralNetwork.feedforward(g1, x, y)
 
     assert (len(result) == 4)
 
@@ -236,11 +240,11 @@ def test_feedforward():
 def test_find_layers():
     g1 = GenomeFactory.create_genome(2, 1)
 
-    l = src.NeuralNetwork.NeuralNetwork.find_layers(g1)
+    l = NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l) == 1)
 
     g1.mutate_add_node()
-    l2 = src.NeuralNetwork.NeuralNetwork.find_layers(g1)
+    l2 = NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l2) == 2)
 
     g1.mutate_add_node()
@@ -250,5 +254,5 @@ def test_find_layers():
     g1.mutate_add_node()
     g1.mutate_add_node()
 
-    l3 = src.NeuralNetwork.NeuralNetwork.find_layers(g1)
+    l3 = NeuralNetwork.NeuralNetwork.find_layers(g1)
     assert (len(l3) > 2)

@@ -1,10 +1,10 @@
 import copy
 from unittest.mock import patch
 
-from src.genome import GenomeFactory, Genome
+from genome import GenomeFactory, Genome
 # from config import Config
 # import src.NeuralNetwork
-from src.neat import compatibility_distance, sort_species, \
+from neat import compatibility_distance, sort_species, \
     calculate_num_excess_disjoint_genes, create_population
 
 
